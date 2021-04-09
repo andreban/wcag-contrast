@@ -5,4 +5,7 @@ authors = ["Andre Bandarra <andreban@gmail.com>"]
 edition = "2018"
 license = "Apache-2.0"
 
+[lib]
+name = "wcagcontrast"
+
 [dependencies]

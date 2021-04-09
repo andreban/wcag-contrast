@@ -15,8 +15,14 @@
  *
  */
 
+//! This crate implements the WCAG specification for contrast ratio and relative luminance.
+//! Read more about WCAG at [https://www.w3.org/TR/WCAG20/](https://www.w3.org/TR/WCAG20/).
+
 use std::str::FromStr;
 
+///
+/// A representation for a color with the red, green and blue channels
+///
 #[derive(Debug, PartialOrd, PartialEq)]
 pub struct Color {
     r: u8,
@@ -25,18 +31,44 @@ pub struct Color {
 }
 
 impl Color {
-
-    pub fn new(r: u8, g: u8, b: u8) -> Color {
+    ///
+    /// Creates a new [Color].
+    /// ```rust
+    /// use wcagcontrast::Color;
+    /// use std::str::FromStr;
+    ///
+    /// let color = Color::new(255, 255, 255);
+    /// assert_eq!(color.rgb(), (255, 255, 255));
+    /// ```
+    pub fn new(r: u8, g: u8, b: u8) -> Self {
         Color {r, g, b}
     }
 
+    ///
+    /// Generates an ([u8], [u8], [u8]) tuple from the [Color] with the red, green, and blue channels.
+    /// ```rust
+    /// use wcagcontrast::Color;
+    /// use std::str::FromStr;
+    ///
+    /// let color = Color::from_str("#FFFFFF").unwrap();
+    /// assert_eq!(color.rgb(), (255, 255, 255));
+    /// ```
     pub fn rgb(&self) -> (u8, u8, u8) {
         (self.r, self.g, self.b)
     }
 
     ///
     /// Calculates the relative luminance, as described on
-    /// https://www.w3.org/TR/WCAG20/#relativeluminancedef
+    /// [https://www.w3.org/TR/WCAG20/#relativeluminancedef](https://www.w3.org/TR/WCAG20/#relativeluminancedef)
+    ///
+    /// ```rust
+    /// use wcagcontrast::Color;
+    ///
+    /// let black = Color::new(0, 0, 0);
+    /// let white = Color::new(255, 255, 255);
+    /// assert_eq!(white.relative_luminance(), 1.0);
+    /// assert_eq!(black.relative_luminance(), 0.0);
+    /// ```
     ///
     pub fn relative_luminance(&self) -> f64 {
         let red_luminance = Color::component_relative_luminance(self.r);
@@ -48,7 +80,17 @@ impl Color {
 
     ///
     /// Calculates the contrast ratio, as described on
-    /// https://www.w3.org/TR/WCAG20/#contrast-ratiodef
+    /// [https://www.w3.org/TR/WCAG20/#contrast-ratiodef](https://www.w3.org/TR/WCAG20/#contrast-ratiodef)
+    ///
+    /// ```rust
+    /// use wcagcontrast::Color;
+    ///
+    /// let black = Color::new(0, 0, 0);
+    /// let white = Color::new(255, 255, 255);
+    /// assert_eq!(black.contrast_ratio(&white), 21.0);
+    /// assert_eq!(black.contrast_ratio(&black), 1.0);
+    /// assert_eq!(white.contrast_ratio(&white), 1.0);
+    /// ```
     ///
     pub fn contrast_ratio(&self, other: &Color) -> f64 {
         let self_luminance = self.relative_luminance();
@@ -80,6 +122,13 @@ impl Color {
 impl FromStr for Color {
     type Err = std::num::ParseIntError;
 
+    /// ```rust
+    /// use wcagcontrast::Color;
+    /// use std::str::FromStr;
+    ///
+    /// let color = Color::from_str("#FFFFFF").unwrap();
+    /// assert_eq!(color.rgb(), (255, 255, 255));
+    /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let r = u8::from_str_radix(&s[1 .. 3], 16)?;
         let g = u8::from_str_radix(&s[3 .. 5], 16)?;
